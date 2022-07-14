@@ -42,7 +42,7 @@ Older versions are no longer supported.
 
 ## Contributors
 
-This project exists thanks to [all the people](https://github.com/webonyx/graphql-php/graphs/contributors) who contribute. [[Contribute](CONTRIBUTING.md)].
+This project exists thanks to [all the people](https://github.com/ITopGun/Graphql-PHP/graphs/contributors) who contribute. [[Contribute](CONTRIBUTING.md)].
 
 ## Sponsors
 
