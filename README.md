@@ -44,9 +44,6 @@ Older versions are no longer supported.
 
 This project exists thanks to [all the people](https://github.com/webonyx/graphql-php/graphs/contributors) who contribute. [[Contribute](CONTRIBUTING.md)].
 
-## Backers
-
-<a href="https://opencollective.com/webonyx-graphql-php#backers" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/backers.svg?width=890"></a>
 
 ## Sponsors
 
