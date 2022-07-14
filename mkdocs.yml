@@ -1,0 +1,32 @@
+site_name: graphql-php
+site_description: PHP implementation of the GraphQL specification
+repo_name: webonyx/graphql-php
+repo_url: https://github.com/webonyx/graphql-php
+theme:
+  name: material
+docs_dir: docs/
+markdown_extensions:
+  - toc:
+      permalink: true
+nav:
+- About: index.md
+- Getting Started: getting-started.md
+- Concepts: concepts.md
+- Complementary Tools: complementary-tools.md
+- Schema Definition: schema-definition.md
+- Type Definitions:
+  - Introduction: type-definitions/index.md
+  - Object Types: type-definitions/object-types.md
+  - Scalars: type-definitions/scalars.md
+  - Enums: type-definitions/enums.md
+  - Lists and Non-Nulls: type-definitions/lists-and-nonnulls.md
+  - Interfaces: type-definitions/interfaces.md
+  - Unions: type-definitions/unions.md
+  - Inputs: type-definitions/inputs.md
+  - Directives: type-definitions/directives.md
+- Schema Definition Language: schema-definition-language.md
+- Executing Queries: executing-queries.md
+- Fetching Data: data-fetching.md
+- Handling Errors: error-handling.md
+- Security: security.md
+- Class Reference: class-reference.md

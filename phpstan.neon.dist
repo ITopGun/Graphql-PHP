@@ -1,0 +1,64 @@
+parameters:
+    # TODO increase to max
+    level: 8
+
+    paths:
+        - benchmarks
+        - examples
+        - generate-class-reference.php
+        - src
+        - tests
+
+    excludePaths:
+        # PHP 8 attributes
+        - src/Type/Definition/Deprecated.php
+        - src/Type/Definition/Description.php
+        # PHP 8.1 enums
+        - src/Type/Definition/PhpEnumType.php
+        - tests/Type/PhpEnumTypeTest.php
+        - tests/Type/PhpEnumType
+
+    ignoreErrors:
+        # Since this is a library that is supposed to be flexible, we don't
+        # want to lock down every possible extension point.
+        - "~Unsafe usage of new static\\(\\)~"
+
+        # This class uses magic methods to reduce a whole lot of boilerplate required to
+        # allow partial parsing of language fragments.
+        - "~Variable method call on GraphQL\\\\Language\\\\Parser\\.~"
+
+        # Useful/necessary in the default field resolver, deals with arbitrary user data
+        -
+            message: "~Variable property access on object~"
+            path: src/Executor/Executor.php
+            count: 2
+
+        # Those come from graphql-php\tests\Language\VisitorTest.php
+        - "~Access to an undefined property GraphQL\\\\Language\\\\AST\\\\.+::\\$didEnter~"
+        - "~Access to an undefined property GraphQL\\\\Language\\\\AST\\\\.+::\\$didLeave~"
+        - "~Access to an undefined property GraphQL\\\\Language\\\\AST\\\\Node::\\$value~"
+
+        # PHPStan does not play nicely with markTestSkipped()
+        - message: "~Unreachable statement - code above always terminates~"
+          path: tests
+
+includes:
+    - phpstan-baseline.neon
+
+services:
+    -
+        class: GraphQL\Tests\PhpStan\Type\Definition\Type\IsAbstractTypeStaticMethodTypeSpecifyingExtension
+        tags:
+            - phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension
+    -
+        class: GraphQL\Tests\PhpStan\Type\Definition\Type\IsCompositeTypeStaticMethodTypeSpecifyingExtension
+        tags:
+            - phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension
+    -
+        class: GraphQL\Tests\PhpStan\Type\Definition\Type\IsInputTypeStaticMethodTypeSpecifyingExtension
+        tags:
+            - phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension
+    -
+        class: GraphQL\Tests\PhpStan\Type\Definition\Type\IsOutputTypeStaticMethodTypeSpecifyingExtension
+        tags:
+            - phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension
