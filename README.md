@@ -47,8 +47,8 @@ This project exists thanks to [all the people](https://github.com/ITopGun/Graphq
 ## Sponsors
 
 Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/webonyx-graphql-php#sponsor)]
-
-<a href="https://opencollective.com/webonyx-graphql-php/sponsor/0/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/0/avatar.svg"></a>
+<!--
+  <a href="https://opencollective.com/webonyx-graphql-php/sponsor/0/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/0/avatar.svg"></a>
 <a href="https://opencollective.com/webonyx-graphql-php/sponsor/1/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/1/avatar.svg"></a>
 <a href="https://opencollective.com/webonyx-graphql-php/sponsor/2/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/2/avatar.svg"></a>
 <a href="https://opencollective.com/webonyx-graphql-php/sponsor/3/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/3/avatar.svg"></a>
@@ -58,6 +58,8 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/webonyx-graphql-php/sponsor/7/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/7/avatar.svg"></a>
 <a href="https://opencollective.com/webonyx-graphql-php/sponsor/8/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/8/avatar.svg"></a>
 <a href="https://opencollective.com/webonyx-graphql-php/sponsor/9/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/9/avatar.svg"></a>
+>
+
 
 ## License
 
