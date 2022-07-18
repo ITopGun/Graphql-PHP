@@ -1,4 +1,4 @@
-# graphql-php
+# Graphql-PHP
 
 [![CI](https://github.com/webonyx/graphql-php/workflows/CI/badge.svg)](https://github.com/webonyx/graphql-php/actions?query=workflow:CI+branch:master)
 [![Coverage Status](https://codecov.io/gh/webonyx/graphql-php/branch/master/graph/badge.svg)](https://codecov.io/gh/webonyx/graphql-php/branch/master)
@@ -42,17 +42,14 @@ Older versions are no longer supported.
 
 ## Contributors
 
-This project exists thanks to [all the people](https://github.com/webonyx/graphql-php/graphs/contributors) who contribute. [[Contribute](CONTRIBUTING.md)].
-
-## Backers
-
-<a href="https://opencollective.com/webonyx-graphql-php#backers" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/backers.svg?width=890"></a>
+This project exists thanks to [all the people](https://github.com/ITopGun/Graphql-PHP/graphs/contributors) who contribute. [[Contribute](CONTRIBUTING.md)].
 
 ## Sponsors
 
 Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/webonyx-graphql-php#sponsor)]
 
-<a href="https://opencollective.com/webonyx-graphql-php/sponsor/0/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/0/avatar.svg"></a>
+<!--
+  <a href="https://opencollective.com/webonyx-graphql-php/sponsor/0/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/0/avatar.svg"></a>
 <a href="https://opencollective.com/webonyx-graphql-php/sponsor/1/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/1/avatar.svg"></a>
 <a href="https://opencollective.com/webonyx-graphql-php/sponsor/2/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/2/avatar.svg"></a>
 <a href="https://opencollective.com/webonyx-graphql-php/sponsor/3/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/3/avatar.svg"></a>
@@ -62,6 +59,8 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/webonyx-graphql-php/sponsor/7/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/7/avatar.svg"></a>
 <a href="https://opencollective.com/webonyx-graphql-php/sponsor/8/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/8/avatar.svg"></a>
 <a href="https://opencollective.com/webonyx-graphql-php/sponsor/9/website" target="_blank"><img src="https://opencollective.com/webonyx-graphql-php/sponsor/9/avatar.svg"></a>
+>
+
 
 ## License
 
