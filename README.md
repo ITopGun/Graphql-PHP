@@ -10,7 +10,11 @@ based on the [reference implementation in JavaScript](https://github.com/graphql
 
 ## Installation
 
+Via composer:
 
+```sh
+composer require webonyx/graphql-php
+```
 
 ## Documentation
 
