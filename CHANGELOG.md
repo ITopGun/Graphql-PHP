@@ -46,6 +46,8 @@ You can find and compare releases at the [GitHub release page](https://github.co
 - `GraphQL\Utils\AST::typeFromAST()` now needs a type loader callable instead of the Schema
 - Do not change HTTP status code in `StandardServer`
 - Use `"` instead of `"""` for single line descriptions
+- Make `Helper::emitResponse()` private, use `Helper::sendResponse()`
+- Emit unescaped UTF-8 from `StandardServer`
 
 ### Added
 
@@ -67,6 +69,7 @@ You can find and compare releases at the [GitHub release page](https://github.co
 - Add option `sortTypes` to have `SchemaPrinter` order types alphabetically
 - Allow constructing `EnumType` from PHP enum
 - Add `TypeInfo::getParentTypeStack()` and `TypeInfo::getFieldDefStack()`
+- Include path to faulty input in coercion errors
 
 ### Optimized
 
