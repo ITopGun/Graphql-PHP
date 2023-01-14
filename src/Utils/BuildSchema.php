@@ -2,8 +2,6 @@
 
 namespace GraphQL\Utils;
 
-use function array_map;
-
 use GraphQL\Error\Error;
 use GraphQL\Language\AST\DirectiveDefinitionNode;
 use GraphQL\Language\AST\DocumentNode;
@@ -16,6 +14,7 @@ use GraphQL\Language\Source;
 use GraphQL\Type\Definition\Directive;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
+use GraphQL\Type\SchemaConfig;
 use GraphQL\Validator\DocumentValidator;
 
 /**
@@ -154,10 +153,12 @@ class BuildSchema
                     $schemaDef = $definition;
                     break;
                 case $definition instanceof TypeDefinitionNode:
-                    $typeDefinitionsMap[$definition->name->value] = $definition;
+                    $name = $definition->getName()->value;
+                    $typeDefinitionsMap[$name] = $definition;
                     break;
                 case $definition instanceof TypeExtensionNode:
-                    $typeExtensionsMap[$definition->name->value][] = $definition;
+                    $name = $definition->getName()->value;
+                    $typeExtensionsMap[$name][] = $definition;
                     break;
                 case $definition instanceof DirectiveDefinitionNode:
                     $directiveDefs[] = $definition;
@@ -176,13 +177,14 @@ class BuildSchema
         $definitionBuilder = new ASTDefinitionBuilder(
             $typeDefinitionsMap,
             $typeExtensionsMap,
+            // @phpstan-ignore-next-line TODO add union type when available
             static function (string $typeName): Type {
                 throw self::unknownType($typeName);
             },
             $this->typeConfigDecorator
         );
 
-        $directives = array_map(
+        $directives = \array_map(
             [$definitionBuilder, 'buildDirective'],
             $directiveDefs
         );
@@ -206,25 +208,28 @@ class BuildSchema
         // Note: While this could make early assertions to get the correctly
         // typed values below, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
-
-        return new Schema([
-            'query' => isset($operationTypes['query'])
+        return new Schema(
+            (new SchemaConfig())
+            // @phpstan-ignore-next-line
+            ->setQuery(isset($operationTypes['query'])
                 ? $definitionBuilder->maybeBuildType($operationTypes['query'])
-                : null,
-            'mutation' => isset($operationTypes['mutation'])
+                : null)
+            // @phpstan-ignore-next-line
+            ->setMutation(isset($operationTypes['mutation'])
                 ? $definitionBuilder->maybeBuildType($operationTypes['mutation'])
-                : null,
-            'subscription' => isset($operationTypes['subscription'])
+                : null)
+            // @phpstan-ignore-next-line
+            ->setSubscription(isset($operationTypes['subscription'])
                 ? $definitionBuilder->maybeBuildType($operationTypes['subscription'])
-                : null,
-            'typeLoader' => static fn (string $name): ?Type => $definitionBuilder->maybeBuildType($name),
-            'directives' => $directives,
-            'astNode' => $schemaDef,
-            'types' => fn (): array => array_map(
-                static fn (TypeDefinitionNode $def): Type => $definitionBuilder->buildType($def->name->value),
+                : null)
+            ->setTypeLoader(static fn (string $name): ?Type => $definitionBuilder->maybeBuildType($name))
+            ->setDirectives($directives)
+            ->setAstNode($schemaDef)
+            ->setTypes(fn (): array => \array_map(
+                static fn (TypeDefinitionNode $def): Type => $definitionBuilder->buildType($def->getName()->value),
                 $typeDefinitionsMap,
-            ),
-        ]);
+            ))
+        );
     }
 
     /**

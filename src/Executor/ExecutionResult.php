@@ -2,15 +2,9 @@
 
 namespace GraphQL\Executor;
 
-use function array_map;
-use function count;
-
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
 use GraphQL\Error\FormattedError;
-use JsonSerializable;
-use ReturnTypeWillChange;
-use Throwable;
 
 /**
  * Returned after [query execution](executing-queries.md).
@@ -19,8 +13,6 @@ use Throwable;
  *
  * Could be converted to [spec-compliant](https://facebook.github.io/graphql/#sec-Response-Format)
  * serializable array using `toArray()`.
- *
- * @see Throwable
  *
  * @phpstan-type SerializableError array{
  *   message: string,
@@ -34,14 +26,10 @@ use Throwable;
  *     errors?: SerializableErrors,
  *     extensions?: array<string, mixed>
  * }
- * @phpstan-type ErrorFormatter callable(Throwable): SerializableError
+ * @phpstan-type ErrorFormatter callable(\Throwable): SerializableError
  * @phpstan-type ErrorsHandler callable(array<Error> $errors, ErrorFormatter $formatter): SerializableErrors
- *
- * @see https://github.com/vimeo/psalm/issues/6928
- *
- * @psalm-type ErrorsHandler callable(Error[], ErrorFormatter): SerializableErrors
  */
-class ExecutionResult implements JsonSerializable
+class ExecutionResult implements \JsonSerializable
 {
     /**
      * Data collected from resolvers during query execution.
@@ -146,7 +134,7 @@ class ExecutionResult implements JsonSerializable
     /**
      * @phpstan-return SerializableResult
      */
-    #[ReturnTypeWillChange]
+    #[\ReturnTypeWillChange]
     public function jsonSerialize(): array
     {
         return $this->toArray();
@@ -169,9 +157,9 @@ class ExecutionResult implements JsonSerializable
     {
         $result = [];
 
-        if (count($this->errors) > 0) {
+        if (\count($this->errors) > 0) {
             $errorsHandler = $this->errorsHandler
-                ?? static fn (array $errors, callable $formatter): array => array_map($formatter, $errors);
+                ?? static fn (array $errors, callable $formatter): array => \array_map($formatter, $errors);
 
             $handledErrors = $errorsHandler(
                 $this->errors,
@@ -188,7 +176,7 @@ class ExecutionResult implements JsonSerializable
             $result['data'] = $this->data;
         }
 
-        if ($this->extensions !== null && count($this->extensions) > 0) {
+        if ($this->extensions !== null && \count($this->extensions) > 0) {
             $result['extensions'] = $this->extensions;
         }
 

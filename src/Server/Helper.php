@@ -2,10 +2,6 @@
 
 namespace GraphQL\Server;
 
-use function array_map;
-use function count;
-use function file_get_contents;
-
 use GraphQL\Error\Error;
 use GraphQL\Error\FormattedError;
 use GraphQL\Error\InvariantViolation;
@@ -19,30 +15,10 @@ use GraphQL\Language\AST\DocumentNode;
 use GraphQL\Language\Parser;
 use GraphQL\Utils\AST;
 use GraphQL\Utils\Utils;
-
-use function header;
-use function html_entity_decode;
-use function is_array;
-use function is_callable;
-use function is_string;
-use function json_decode;
-use function json_encode;
-
-use const JSON_ERROR_NONE;
-
-use function json_last_error;
-use function json_last_error_msg;
-
-use JsonSerializable;
-
-use function parse_str;
-
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
-
-use function stripos;
 
 /**
  * Contains functionality that could be re-used by various server implementations.
@@ -83,21 +59,21 @@ class Helper
                 throw new RequestError('Missing "Content-Type" header');
             }
 
-            if (stripos($contentType, 'application/graphql') !== false) {
+            if (\stripos($contentType, 'application/graphql') !== false) {
                 $rawBody = $readRawBodyFn === null
                     ? $this->readRawBody()
                     : $readRawBodyFn();
                 $bodyParams = ['query' => $rawBody];
-            } elseif (stripos($contentType, 'application/json') !== false) {
+            } elseif (\stripos($contentType, 'application/json') !== false) {
                 $rawBody = $readRawBodyFn === null
                     ? $this->readRawBody()
                     : $readRawBodyFn();
                 $bodyParams = $this->decodeJson($rawBody);
 
                 $this->assertJsonObjectOrArray($bodyParams);
-            } elseif (stripos($contentType, 'application/x-www-form-urlencoded') !== false) {
+            } elseif (\stripos($contentType, 'application/x-www-form-urlencoded') !== false) {
                 $bodyParams = $_POST;
-            } elseif (stripos($contentType, 'multipart/form-data') !== false) {
+            } elseif (\stripos($contentType, 'multipart/form-data') !== false) {
                 $bodyParams = $_POST;
             } else {
                 throw new RequestError('Unexpected content type: ' . Utils::printSafeJson($contentType));
@@ -141,7 +117,7 @@ class Helper
             return OperationParams::create($bodyParams);
         }
 
-        throw new RequestError('HTTP Method "' . $method . '" is not supported');
+        throw new RequestError("HTTP Method \"{$method}\" is not supported");
     }
 
     /**
@@ -161,28 +137,28 @@ class Helper
             $errors[] = new RequestError('GraphQL Request must include at least one of those two parameters: "query" or "queryId"');
         }
 
-        if (! is_string($query)) {
+        if (! \is_string($query)) {
             $errors[] = new RequestError(
                 'GraphQL Request parameter "query" must be string, but got '
                 . Utils::printSafeJson($params->query)
             );
         }
 
-        if (! is_string($queryId)) {
+        if (! \is_string($queryId)) {
             $errors[] = new RequestError(
                 'GraphQL Request parameter "queryId" must be string, but got '
                 . Utils::printSafeJson($params->queryId)
             );
         }
 
-        if ($params->operation !== null && ! is_string($params->operation)) {
+        if ($params->operation !== null && ! \is_string($params->operation)) {
             $errors[] = new RequestError(
                 'GraphQL Request parameter "operation" must be string, but got '
                 . Utils::printSafeJson($params->operation)
             );
         }
 
-        if ($params->variables !== null && (! is_array($params->variables) || isset($params->variables[0]))) {
+        if ($params->variables !== null && (! \is_array($params->variables) || isset($params->variables[0]))) {
             $errors[] = new RequestError(
                 'GraphQL Request parameter "variables" must be object or JSON string parsed to object, but got '
                 . Utils::printSafeJson($params->originalInput['variables'])
@@ -225,8 +201,8 @@ class Helper
     public function executeBatch(ServerConfig $config, array $operations)
     {
         $promiseAdapter = $config->getPromiseAdapter() ?? Executor::getPromiseAdapter();
-        $result = [];
 
+        $result = [];
         foreach ($operations as $operation) {
             $result[] = $this->promiseToExecuteOperation($promiseAdapter, $config, $operation, true);
         }
@@ -258,8 +234,8 @@ class Helper
 
             $errors = $this->validateOperationParams($op);
 
-            if (count($errors) > 0) {
-                $locatedErrors = array_map(
+            if (\count($errors) > 0) {
+                $locatedErrors = \array_map(
                     [Error::class, 'createLocatedError'],
                     $errors
                 );
@@ -341,11 +317,10 @@ class Helper
         $source = $loader($operationParams->queryId, $operationParams);
 
         // @phpstan-ignore-next-line Necessary until PHP gains function types
-        if (! is_string($source) && ! $source instanceof DocumentNode) {
-            throw new InvariantViolation(
-                'Persisted query loader must return query string or instance of ' . DocumentNode::class
-                . ' but got: ' . Utils::printSafe($source)
-            );
+        if (! \is_string($source) && ! $source instanceof DocumentNode) {
+            $documentNode = DocumentNode::class;
+            $safeSource = Utils::printSafe($source);
+            throw new InvariantViolation("Persisted query loader must return query string or instance of {$documentNode} but got: {$safeSource}");
         }
 
         return $source;
@@ -362,15 +337,14 @@ class Helper
     ): ?array {
         $validationRules = $config->getValidationRules();
 
-        if (is_callable($validationRules)) {
+        if (\is_callable($validationRules)) {
             $validationRules = $validationRules($params, $doc, $operationType);
         }
 
         // @phpstan-ignore-next-line unless PHP gains function types, we have to check this at runtime
-        if ($validationRules !== null && ! is_array($validationRules)) {
-            throw new InvariantViolation(
-                'Expecting validation rules to be array or callable returning array, but got: ' . Utils::printSafe($validationRules)
-            );
+        if ($validationRules !== null && ! \is_array($validationRules)) {
+            $safeValidationRules = Utils::printSafe($validationRules);
+            throw new InvariantViolation("Expecting validation rules to be array or callable returning array, but got: {$safeValidationRules}");
         }
 
         return $validationRules;
@@ -387,7 +361,7 @@ class Helper
     ) {
         $rootValue = $config->getRootValue();
 
-        if (is_callable($rootValue)) {
+        if (\is_callable($rootValue)) {
             $rootValue = $rootValue($params, $doc, $operationType);
         }
 
@@ -405,7 +379,7 @@ class Helper
     ) {
         $context = $config->getContext();
 
-        if (is_callable($context)) {
+        if (\is_callable($context)) {
             $context = $context($params, $doc, $operationType);
         }
 
@@ -431,17 +405,17 @@ class Helper
     }
 
     /**
-     * @param array<mixed>|JsonSerializable $jsonSerializable
+     * @param array<mixed>|\JsonSerializable $jsonSerializable
      */
     protected function emitResponse($jsonSerializable): void
     {
-        header('Content-Type: application/json;charset=utf-8');
-        echo json_encode($jsonSerializable, JSON_UNESCAPED_UNICODE);
+        \header('Content-Type: application/json;charset=utf-8');
+        echo \json_encode($jsonSerializable, JSON_UNESCAPED_UNICODE);
     }
 
     protected function readRawBody(): string
     {
-        $body = file_get_contents('php://input');
+        $body = \file_get_contents('php://input');
         if ($body === false) {
             throw new RequestError('Could not read body.');
         }
@@ -469,9 +443,9 @@ class Helper
                 throw new RequestError('Missing "Content-Type" header');
             }
 
-            if (stripos($contentType[0], 'application/graphql') !== false) {
+            if (\stripos($contentType[0], 'application/graphql') !== false) {
                 $bodyParams = ['query' => (string) $request->getBody()];
-            } elseif (stripos($contentType[0], 'application/json') !== false) {
+            } elseif (\stripos($contentType[0], 'application/json') !== false) {
                 $bodyParams = $request instanceof ServerRequestInterface
                     ? $request->getParsedBody()
                     : $this->decodeJson((string) $request->getBody());
@@ -482,11 +456,11 @@ class Helper
                     $bodyParams = $request->getParsedBody();
                 }
 
-                $bodyParams ??= $this->decodeContent((string) $request->getBody(), $contentType[0]);
+                $bodyParams ??= $this->decodeContent((string) $request->getBody());
             }
         }
 
-        parse_str(html_entity_decode($request->getUri()->getQuery()), $queryParams);
+        \parse_str(\html_entity_decode($request->getUri()->getQuery()), $queryParams);
 
         return $this->parseRequestParams(
             $request->getMethod(),
@@ -502,10 +476,10 @@ class Helper
      */
     protected function decodeJson(string $rawBody)
     {
-        $bodyParams = json_decode($rawBody, true);
+        $bodyParams = \json_decode($rawBody, true);
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new RequestError('Expected JSON object or array for "application/json" request, but failed to parse because: ' . json_last_error_msg());
+        if (\json_last_error() !== \JSON_ERROR_NONE) {
+            throw new RequestError('Expected JSON object or array for "application/json" request, but failed to parse because: ' . \json_last_error_msg());
         }
 
         return $bodyParams;
@@ -514,15 +488,11 @@ class Helper
     /**
      * @throws RequestError
      *
-     * @return array<string, mixed>
+     * @return array<mixed>
      */
-    protected function decodeContent(string $rawBody, string $contentType): array
+    protected function decodeContent(string $rawBody): array
     {
-        parse_str($rawBody, $bodyParams);
-
-        if (! is_array($bodyParams)) {
-            throw new RequestError('Unexpected content type: ' . Utils::printSafeJson($contentType));
-        }
+        \parse_str($rawBody, $bodyParams);
 
         return $bodyParams;
     }
@@ -534,10 +504,9 @@ class Helper
      */
     protected function assertJsonObjectOrArray($bodyParams): void
     {
-        if (! is_array($bodyParams)) {
-            throw new RequestError(
-                'Expected JSON object or array for "application/json" request, got: ' . Utils::printSafeJson($bodyParams)
-            );
+        if (! \is_array($bodyParams)) {
+            $notArray = Utils::printSafeJson($bodyParams);
+            throw new RequestError("Expected JSON object or array for \"application/json\" request, got: {$notArray}");
         }
     }
 
@@ -566,7 +535,7 @@ class Helper
      */
     protected function doConvertToPsrResponse($result, ResponseInterface $response, StreamInterface $writableBodyStream): ResponseInterface
     {
-        $writableBodyStream->write(json_encode($result, JSON_THROW_ON_ERROR));
+        $writableBodyStream->write(\json_encode($result, JSON_THROW_ON_ERROR));
 
         return $response
             ->withHeader('Content-Type', 'application/json')

@@ -13,8 +13,6 @@ use React\Promise\PromiseInterface as ReactPromiseInterface;
 use function React\Promise\reject;
 use function React\Promise\resolve;
 
-use Throwable;
-
 class ReactPromiseAdapter implements PromiseAdapter
 {
     public function isThenable($value): bool
@@ -49,7 +47,7 @@ class ReactPromiseAdapter implements PromiseAdapter
         return new Promise($promise, $this);
     }
 
-    public function createRejected(Throwable $reason): Promise
+    public function createRejected(\Throwable $reason): Promise
     {
         $promise = reject($reason);
 
@@ -58,28 +56,19 @@ class ReactPromiseAdapter implements PromiseAdapter
 
     public function all(iterable $promisesOrValues): Promise
     {
-        assert(
-            is_array($promisesOrValues),
-            'ReactPromiseAdapter::all(): Argument #1 ($promisesOrValues) must be of type array'
-        );
-
-        // TODO: rework with generators when PHP minimum required version is changed to 5.5+
-
         foreach ($promisesOrValues as &$promiseOrValue) {
             if ($promiseOrValue instanceof Promise) {
                 $promiseOrValue = $promiseOrValue->adoptedPromise;
             }
         }
 
-        $promise = all($promisesOrValues)->then(static function ($values) use ($promisesOrValues): array {
-            $orderedResults = [];
-
-            foreach ($promisesOrValues as $key => $value) {
-                $orderedResults[$key] = $values[$key];
-            }
-
-            return $orderedResults;
-        });
+        $promisesOrValuesArray = is_array($promisesOrValues)
+            ? $promisesOrValues
+            : iterator_to_array($promisesOrValues);
+        $promise = all($promisesOrValuesArray)->then(static fn ($values): array => array_map(
+            static fn ($key) => $values[$key],
+            array_keys($promisesOrValuesArray),
+        ));
 
         return new Promise($promise, $this);
     }

@@ -9,6 +9,19 @@ You can find and compare releases at the [GitHub release page](https://github.co
 
 ## Unreleased
 
+## v15.0.1
+
+### Fixed
+
+- Fix printing of single line descriptions with backslashes
+
+### Changed
+
+- Print long argument lists on multiple lines
+- Print space between object value brackets
+
+## v15.0.0
+
 ### Changed
 
 - PHP version required: 7.4+
@@ -48,6 +61,13 @@ You can find and compare releases at the [GitHub release page](https://github.co
 - Use `"` instead of `"""` for single line descriptions
 - Make `Helper::emitResponse()` private, use `Helper::sendResponse()`
 - Emit unescaped UTF-8 from `StandardServer`
+- Sync input value coercion with `graphql-js` reference implementation
+- Store rules exclusively by class name in `DocumentValidator`
+- Reorder standard types as described in the GraphQL specification
+- Improve runtime performance by moving checks for duplicate/mismatching type instances to `assert()` or schema validation
+- Replace `HasSelectionSet::$selectionSet` with `HasSelectionSet::getSelectionSet()`
+- Replace `TypeDefinitionNode::$name` with `TypeDefinitionNode::getName()`
+- Replace `TypeExtensionNode::$name` with `TypeExtensionNode::getName()`
 
 ### Added
 
@@ -70,6 +90,7 @@ You can find and compare releases at the [GitHub release page](https://github.co
 - Allow constructing `EnumType` from PHP enum
 - Add `TypeInfo::getParentTypeStack()` and `TypeInfo::getFieldDefStack()`
 - Include path to faulty input in coercion errors
+- Add ability to resolve abstract type of object via `__typename`
 
 ### Optimized
 
@@ -78,7 +99,8 @@ You can find and compare releases at the [GitHub release page](https://github.co
 
 ### Fixed
 
-- Avoid QueryPlan crash when multiple $fieldNodes are present
+- Avoid `QueryPlan` crash when multiple `$fieldNodes` are present
+- Allow instantiating multiple `QueryPlan` with different options
 - Clarify error when attempting to coerce anything but `array` or `stdClass` to an input object
 - Allow directives on variable definitions
 - Handle `null` parent of list in `ValuesOfCorrectType::getVisitor`
@@ -91,28 +113,10 @@ You can find and compare releases at the [GitHub release page](https://github.co
 - Avoid calling `FormattedError::addDebugEntries()` twice when using default error formatting
 - Avoid calling defined functions named like lazily loaded types
 - Show actual error in debug entries
+- Deal with `iterable` in implementations of `PromiseAdapter::all()`
 
 ### Removed
 
-- Remove deprecated `Type::getInternalTypes()`
-- Remove deprecated `GraphQL::execute()`
-- Remove deprecated `GraphQL::executeAndReturnResult()`
-- Remove deprecated experimental CoroutineExecutor
-- Remove deprecated `FormattedError::create()` and `FormattedError::createFromPHPError()`
-- Remove deprecated `GraphQL::setPromiseAdapter()`
-- Remove deprecated `AST::getOperation()`
-- Remove deprecated constants from `BreakingChangesFinder`
-- Remove deprecated `DocumentValidator::isValidLiteralValue()`
-- Remove deprecated `Error::formatError()` and `Error::toSerializableArray()`
-- Remove deprecated `GraphQL::getInternalDirectives()`
-- Remove deprecated `Schema::isPossibleType()`
-- Remove deprecated methods from `TypeInfo`
-- Remove deprecated `Values::valueFromAST()` and `Values::isValidPHPValue()`
-- Remove deprecated public property access to `InputObjectField::$type`
-- Remove deprecated public property access to `FieldDefinition::$type`
-- Remove alias `GraphQL\Validator\Rules\AbstractQuerySecurity`, use `GraphQL\Validator\Rules\QuerySecurityRule`
-- Remove alias `GraphQL\Validator\Rules\AbstractValidationRule`, use `GraphQL\Validator\Rules\ValidationRule`
-- Remove alias `GraphQL\Utils\FindBreakingChanges`, use `GraphQL\Utils\BreakingChangesFinder`
 - Remove `OperationParams` method `getOriginalInput()` in favor of public property `$originalInput`
 - Remove `OperationParams` method `isReadOnly()` in favor of public property `$readOnly`
 - Remove `Utils::withErrorHandling()`
@@ -135,68 +139,94 @@ You can find and compare releases at the [GitHub release page](https://github.co
 - Remove `GraphQL\Utils\TypeInfo::typeFromAST()`, use `GraphQL\Utils\AST::typeFromAST()`
 - Remove `StandardServer::send500Error()`, handle non-GraphQL errors yourself
 - Remove `StandardServer::getHelper()`, use `new Helper`
+- Remove error extension field `category`, use custom error formatting if you still need it
+- Remove deprecated `Type::getInternalTypes()`
+- Remove deprecated `GraphQL::execute()`
+- Remove deprecated `GraphQL::executeAndReturnResult()`
+- Remove deprecated experimental CoroutineExecutor
+- Remove deprecated `FormattedError::create()` and `FormattedError::createFromPHPError()`
+- Remove deprecated `GraphQL::setPromiseAdapter()`
+- Remove deprecated `AST::getOperation()`
+- Remove deprecated constants from `BreakingChangesFinder`
+- Remove deprecated `DocumentValidator::isValidLiteralValue()`
+- Remove deprecated `Error::formatError()` and `Error::toSerializableArray()`
+- Remove deprecated `GraphQL::getInternalDirectives()`
+- Remove deprecated `Schema::isPossibleType()`
+- Remove deprecated methods from `TypeInfo`
+- Remove deprecated `Values::valueFromAST()` and `Values::isValidPHPValue()`
+- Remove deprecated public property access to `InputObjectField::$type`
+- Remove deprecated public property access to `FieldDefinition::$type`
+- Remove alias `GraphQL\Validator\Rules\AbstractQuerySecurity`, use `GraphQL\Validator\Rules\QuerySecurityRule`
+- Remove alias `GraphQL\Validator\Rules\AbstractValidationRule`, use `GraphQL\Validator\Rules\ValidationRule`
+- Remove alias `GraphQL\Utils\FindBreakingChanges`, use `GraphQL\Utils\BreakingChangesFinder`
 
-## 14.11.8
+## v14.11.9
+
+### Fixed
+
+- Accept AST where field arguments are not given
+
+## v14.11.8
 
 ### Fixed
 
 - Correct the broken 14.11.7 release - see https://github.com/webonyx/graphql-php/issues/1221
 
-## 14.11.7
+## v14.11.7
 
 ### Fixed
 
 - Fix PHP 8.2 deprecation of "static" in callables
 
-## 14.11.6
+## v14.11.6
 
 ### Fixed
 
 - Fix validation of modified sparse ASTs
 
-## 14.11.5
+## v14.11.5
 
 ### Fixed
 
 - Fix `extend()` to preserve `repeatable` (#931)
 
-## 14.11.4
+## v14.11.4
 
 ### Fixed
 
 - Fix repeatable directive validation for AST
 
-## 14.11.3
+## v14.11.3
 
 ### Fixed
 
 - Fix compatibility of more methods with native return type in PHP 8.1
 
-## 14.11.2
+## v14.11.2
 
 ### Fixed
 
 - Support non-JSON `ServerRequestInterface`
 
-## 14.11.1
+## v14.11.1
 
 ### Fixed
 
 - Fix compatibility of methods with native return type in PHP 8.1
 
-## 14.11.0
+## v14.11.0
 
 ### Added
 
 - Allow field definitions to be defined as any `iterable`, not just `array`
 
-## 14.10.0
+## v14.10.0
 
 ### Added
 
 - Make `IntType` constants `MAX_INT` and `MIN_INT` public
 
-## 14.9.0
+## v14.9.0
 
 ### Added
 

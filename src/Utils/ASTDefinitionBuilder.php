@@ -36,14 +36,11 @@ use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\InterfaceType;
+use GraphQL\Type\Definition\NamedType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\OutputType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
-
-use function is_array;
-
-use Throwable;
 
 /**
  * @see FieldDefinition, InputObjectField
@@ -52,7 +49,7 @@ use Throwable;
  * @phpstan-import-type InputObjectFieldConfig from InputObjectField
  * @phpstan-import-type UnnamedInputObjectFieldConfig from InputObjectField
  *
- * @phpstan-type ResolveType callable(string, Node|null): Type
+ * @phpstan-type ResolveType callable(string, Node|null): Type&NamedType
  * @phpstan-type TypeConfigDecorator callable(array<string, mixed>, Node&TypeDefinitionNode, array<string, Node&TypeDefinitionNode>): array<string, mixed>
  */
 class ASTDefinitionBuilder
@@ -74,7 +71,7 @@ class ASTDefinitionBuilder
      */
     private $typeConfigDecorator;
 
-    /** @var array<string, Type> */
+    /** @var array<string, Type&NamedType> */
     private array $cache;
 
     /** @var array<string, array<int, Node&TypeExtensionNode>> */
@@ -98,7 +95,7 @@ class ASTDefinitionBuilder
         $this->resolveType = $resolveType;
         $this->typeConfigDecorator = $typeConfigDecorator;
 
-        $this->cache = Type::getAllBuiltInTypes();
+        $this->cache = Type::builtInTypes();
     }
 
     public function buildDirective(DirectiveDefinitionNode $directiveNode): Directive
@@ -186,14 +183,22 @@ class ASTDefinitionBuilder
 
     /**
      * @param string|(Node&NamedTypeNode)|(Node&TypeDefinitionNode) $ref
+     *
+     * @return Type&NamedType
      */
     public function buildType($ref): Type
     {
-        if (is_string($ref)) {
-            return $this->internalBuildType($ref);
+        $type = null;
+
+        if ($ref instanceof TypeDefinitionNode) {
+            $type = $this->internalBuildType($ref->getName()->value, $ref);
+        } elseif ($ref instanceof NamedTypeNode) {
+            $type = $this->internalBuildType($ref->name->value, $ref);
+        } else {
+            $type = $this->internalBuildType($ref);
         }
 
-        return $this->internalBuildType($ref->name->value, $ref);
+        return $type;
     }
 
     /**
@@ -201,6 +206,8 @@ class ASTDefinitionBuilder
      * It is legal to access a type from the map of already-built types that doesn't exist in the map.
      * Since we build types lazily, and we don't have a such map of built types,
      * this method provides a way to build a type that may not exist in the SDL definitions and returns null instead.
+     *
+     * @return (Type&NamedType)|null
      */
     public function maybeBuildType(string $name): ?Type
     {
@@ -213,6 +220,8 @@ class ASTDefinitionBuilder
      * @param (Node&NamedTypeNode)|(Node&TypeDefinitionNode)|null $typeNode
      *
      * @throws Error
+     *
+     * @return Type&NamedType
      */
     private function internalBuildType(string $typeName, ?Node $typeNode = null): Type
     {
@@ -230,9 +239,10 @@ class ASTDefinitionBuilder
                         $this->typeDefinitionsMap[$typeName],
                         $this->typeDefinitionsMap
                     );
-                } catch (Throwable $e) {
+                } catch (\Throwable $e) {
+                    $class = static::class;
                     throw new Error(
-                        'Type config decorator passed to ' . static::class . ' threw an error when building ' . $typeName . ' type: ' . $e->getMessage(),
+                        "Type config decorator passed to {$class} threw an error when building {$typeName} type: {$e->getMessage()}",
                         null,
                         null,
                         [],
@@ -242,10 +252,10 @@ class ASTDefinitionBuilder
                 }
 
                 // @phpstan-ignore-next-line should not happen, but function types are not enforced by PHP
-                if (! is_array($config) || isset($config[0])) {
-                    throw new Error(
-                        'Type config decorator passed to ' . static::class . ' is expected to return an array, but got ' . Utils::printSafe($config)
-                    );
+                if (! \is_array($config) || isset($config[0])) {
+                    $class = static::class;
+                    $notArray = Utils::printSafe($config);
+                    throw new Error("Type config decorator passed to {$class} is expected to return an array, but got {$notArray}");
                 }
 
                 $type = $this->makeSchemaDefFromConfig($this->typeDefinitionsMap[$typeName], $config);

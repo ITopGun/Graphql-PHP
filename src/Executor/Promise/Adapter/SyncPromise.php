@@ -2,24 +2,16 @@
 
 namespace GraphQL\Executor\Promise\Adapter;
 
-use Exception;
 use GraphQL\Error\InvariantViolation;
-
-use function is_object;
-use function method_exists;
-
-use SplQueue;
-use Throwable;
 
 /**
  * Simplistic (yet full-featured) implementation of Promises A+ spec for regular PHP `sync` mode
  * (using queue to defer promises execution).
  *
- * Note:
  * Library users are not supposed to use SyncPromise class in their resolvers.
- * Instead they should use GraphQL\Deferred which enforces $executor callback in the constructor.
+ * Instead, they should use @see \GraphQL\Deferred which enforces `$executor` callback in the constructor.
  *
- * Root SyncPromise without explicit $executor will never resolve (actually throw while trying).
+ * Root SyncPromise without explicit `$executor` will never resolve (actually throw while trying).
  * The whole point of Deferred is to ensure it never happens and that any resolver creates
  * at least one $executor to start the promise chain.
  *
@@ -44,11 +36,11 @@ class SyncPromise
      *     array{
      *         self,
      *         (callable(mixed): mixed)|null,
-     *         (callable(Throwable): mixed)|null
+     *         (callable(\Throwable): mixed)|null
      *     }
      * >
      */
-    private array $waiting = [];
+    protected array $waiting = [];
 
     public static function runQueue(): void
     {
@@ -71,7 +63,7 @@ class SyncPromise
         self::getQueue()->enqueue(function () use ($executor): void {
             try {
                 $this->resolve($executor());
-            } catch (Throwable $e) {
+            } catch (\Throwable $e) {
                 $this->reject($e);
             }
         });
@@ -85,10 +77,10 @@ class SyncPromise
         switch ($this->state) {
             case self::PENDING:
                 if ($value === $this) {
-                    throw new Exception('Cannot resolve promise with self');
+                    throw new \Exception('Cannot resolve promise with self');
                 }
 
-                if (is_object($value) && method_exists($value, 'then')) {
+                if (\is_object($value) && \method_exists($value, 'then')) {
                     $value->then(
                         function ($resolvedValue): void {
                             $this->resolve($resolvedValue);
@@ -107,18 +99,18 @@ class SyncPromise
                 break;
             case self::FULFILLED:
                 if ($this->result !== $value) {
-                    throw new Exception('Cannot change value of fulfilled promise');
+                    throw new \Exception('Cannot change value of fulfilled promise');
                 }
 
                 break;
             case self::REJECTED:
-                throw new Exception('Cannot resolve rejected promise');
+                throw new \Exception('Cannot resolve rejected promise');
         }
 
         return $this;
     }
 
-    public function reject(Throwable $reason): self
+    public function reject(\Throwable $reason): self
     {
         switch ($this->state) {
             case self::PENDING:
@@ -128,12 +120,12 @@ class SyncPromise
                 break;
             case self::REJECTED:
                 if ($reason !== $this->result) {
-                    throw new Exception('Cannot change rejection reason');
+                    throw new \Exception('Cannot change rejection reason');
                 }
 
                 break;
             case self::FULFILLED:
-                throw new Exception('Cannot reject fulfilled promise');
+                throw new \Exception('Cannot reject fulfilled promise');
         }
 
         return $this;
@@ -152,7 +144,7 @@ class SyncPromise
                 if ($this->state === self::FULFILLED) {
                     try {
                         $promise->resolve($onFulfilled === null ? $this->result : $onFulfilled($this->result));
-                    } catch (Throwable $e) {
+                    } catch (\Throwable $e) {
                         $promise->reject($e);
                     }
                 } elseif ($this->state === self::REJECTED) {
@@ -162,7 +154,7 @@ class SyncPromise
                         } else {
                             $promise->resolve($onRejected($this->result));
                         }
-                    } catch (Throwable $e) {
+                    } catch (\Throwable $e) {
                         $promise->reject($e);
                     }
                 }
@@ -173,18 +165,18 @@ class SyncPromise
     }
 
     /**
-     * @return SplQueue<callable(): void>
+     * @return \SplQueue<callable(): void>
      */
-    public static function getQueue(): SplQueue
+    public static function getQueue(): \SplQueue
     {
         static $queue;
 
-        return $queue ??= new SplQueue();
+        return $queue ??= new \SplQueue();
     }
 
     /**
      * @param (callable(mixed): mixed)|null $onFulfilled
-     * @param (callable(Throwable): mixed)|null $onRejected
+     * @param (callable(\Throwable): mixed)|null $onRejected
      */
     public function then(?callable $onFulfilled = null, ?callable $onRejected = null): self
     {
@@ -207,7 +199,7 @@ class SyncPromise
     }
 
     /**
-     * @param callable(Throwable): mixed $onRejected
+     * @param callable(\Throwable): mixed $onRejected
      */
     public function catch(callable $onRejected): self
     {

@@ -9,16 +9,8 @@ use function Amp\Promise\all;
 
 use Amp\Promise as AmpPromise;
 use Amp\Success;
-
-use function array_replace;
-use function assert;
-
 use GraphQL\Executor\Promise\Promise;
 use GraphQL\Executor\Promise\PromiseAdapter;
-
-use function is_array;
-
-use Throwable;
 
 class AmpPromiseAdapter implements PromiseAdapter
 {
@@ -35,7 +27,7 @@ class AmpPromiseAdapter implements PromiseAdapter
     public function then(Promise $promise, ?callable $onFulfilled = null, ?callable $onRejected = null): Promise
     {
         $deferred = new Deferred();
-        $onResolve = static function (?Throwable $reason, $value) use ($onFulfilled, $onRejected, $deferred): void {
+        $onResolve = static function (?\Throwable $reason, $value) use ($onFulfilled, $onRejected, $deferred): void {
             if ($reason === null && $onFulfilled !== null) {
                 self::resolveWithCallable($deferred, $onFulfilled, $value);
             } elseif ($reason === null) {
@@ -48,7 +40,7 @@ class AmpPromiseAdapter implements PromiseAdapter
         };
 
         $adoptedPromise = $promise->adoptedPromise;
-        assert($adoptedPromise instanceof AmpPromise);
+        \assert($adoptedPromise instanceof AmpPromise);
 
         $adoptedPromise->onResolve($onResolve);
 
@@ -63,7 +55,7 @@ class AmpPromiseAdapter implements PromiseAdapter
             static function ($value) use ($deferred): void {
                 $deferred->resolve($value);
             },
-            static function (Throwable $exception) use ($deferred): void {
+            static function (\Throwable $exception) use ($deferred): void {
                 $deferred->fail($exception);
             }
         );
@@ -78,7 +70,7 @@ class AmpPromiseAdapter implements PromiseAdapter
         return new Promise($promise, $this);
     }
 
-    public function createRejected(Throwable $reason): Promise
+    public function createRejected(\Throwable $reason): Promise
     {
         $promise = new Failure($reason);
 
@@ -87,17 +79,12 @@ class AmpPromiseAdapter implements PromiseAdapter
 
     public function all(iterable $promisesOrValues): Promise
     {
-        assert(
-            is_array($promisesOrValues),
-            'AmpPromiseAdapter::all(): Argument #1 ($promisesOrValues) must be of type array'
-        );
-
         /** @var array<AmpPromise<mixed>> $promises */
         $promises = [];
         foreach ($promisesOrValues as $key => $item) {
             if ($item instanceof Promise) {
                 $ampPromise = $item->adoptedPromise;
-                assert($ampPromise instanceof AmpPromise);
+                \assert($ampPromise instanceof AmpPromise);
                 $promises[$key] = $ampPromise;
             } elseif ($item instanceof AmpPromise) {
                 $promises[$key] = $item;
@@ -106,18 +93,21 @@ class AmpPromiseAdapter implements PromiseAdapter
 
         $deferred = new Deferred();
 
-        $onResolve = static function (?Throwable $reason, ?array $values) use ($promisesOrValues, $deferred): void {
+        all($promises)->onResolve(static function (?\Throwable $reason, ?array $values) use ($promisesOrValues, $deferred): void {
             if ($reason === null) {
-                assert(is_array($values), 'Either $reason or $values must be passed');
-                $deferred->resolve(array_replace($promisesOrValues, $values));
+                \assert(\is_array($values), 'Either $reason or $values must be passed');
+
+                $promisesOrValuesArray = is_array($promisesOrValues)
+                    ? $promisesOrValues
+                    : iterator_to_array($promisesOrValues);
+                $resolvedValues = \array_replace($promisesOrValuesArray, $values);
+                $deferred->resolve($resolvedValues);
 
                 return;
             }
 
             $deferred->fail($reason);
-        };
-
-        all($promises)->onResolve($onResolve);
+        });
 
         return new Promise($deferred->promise(), $this);
     }
@@ -134,7 +124,7 @@ class AmpPromiseAdapter implements PromiseAdapter
     {
         try {
             $result = $callback($argument);
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             $deferred->fail($exception);
 
             return;
