@@ -5,6 +5,7 @@ namespace GraphQL\Type;
 use GraphQL\Error\Error;
 use GraphQL\Error\InvariantViolation;
 use GraphQL\GraphQL;
+use GraphQL\Language\AST\OperationDefinitionNode;
 use GraphQL\Language\AST\SchemaDefinitionNode;
 use GraphQL\Language\AST\SchemaExtensionNode;
 use GraphQL\Type\Definition\AbstractType;
@@ -18,10 +19,6 @@ use GraphQL\Type\Definition\UnionType;
 use GraphQL\Utils\InterfaceImplementations;
 use GraphQL\Utils\TypeInfo;
 use GraphQL\Utils\Utils;
-
-use function implode;
-use function is_array;
-use function is_callable;
 
 /**
  * Schema Definition (see [schema definition docs](schema-definition.md)).
@@ -42,6 +39,9 @@ use function is_callable;
  *         ->setMutation($MyAppMutationRootType);
  *
  *     $schema = new GraphQL\Type\Schema($config);
+ *
+ * @phpstan-import-type SchemaConfigOptions from SchemaConfig
+ * @phpstan-import-type OperationType from OperationDefinitionNode
  */
 class Schema
 {
@@ -77,11 +77,13 @@ class Schema
     /**
      * @param SchemaConfig|array<string, mixed> $config
      *
+     * @phpstan-param SchemaConfig|SchemaConfigOptions $config
+     *
      * @api
      */
     public function __construct($config)
     {
-        if (is_array($config)) {
+        if (\is_array($config)) {
             $config = SchemaConfig::create($config);
         }
 
@@ -110,7 +112,7 @@ class Schema
     {
         if (! $this->fullyLoaded) {
             $types = $this->config->types;
-            if (is_callable($types)) {
+            if (\is_callable($types)) {
                 $types = $types();
             }
 
@@ -118,14 +120,16 @@ class Schema
             $this->resolvedTypes = [];
 
             foreach ($types as $typeOrLazyType) {
+                /** @var Type|callable(): Type $typeOrLazyType */
                 $type = self::resolveType($typeOrLazyType);
+                assert($type instanceof NamedType);
 
+                /** @var string $typeName Necessary assertion for PHPStan + PHP 8.2 */
                 $typeName = $type->name;
-                if (isset($this->resolvedTypes[$typeName])) {
-                    if ($type !== $this->resolvedTypes[$typeName]) {
-                        throw new InvariantViolation("Schema must contain unique named types but contains multiple types named \"$type\" (see https://webonyx.github.io/graphql-php/type-definitions/#type-registry).");
-                    }
-                }
+                assert(
+                    ! isset($this->resolvedTypes[$typeName]) || $type === $this->resolvedTypes[$typeName],
+                    "Schema must contain unique named types but contains multiple types named \"{$type}\" (see https://webonyx.github.io/graphql-php/type-definitions/#type-registry).",
+                );
 
                 $this->resolvedTypes[$typeName] = $type;
             }
@@ -190,20 +194,16 @@ class Schema
         return "Type loader is expected to return type {$expectedTypeName}, but it returned type {$actualTypeName}.";
     }
 
+    /**
+     * Returns root type by operation name.
+     */
     public function getOperationType(string $operation): ?ObjectType
     {
         switch ($operation) {
-            case 'query':
-                return $this->getQueryType();
-
-            case 'mutation':
-                return $this->getMutationType();
-
-            case 'subscription':
-                return $this->getSubscriptionType();
-
-            default:
-                return null;
+            case 'query': return $this->getQueryType();
+            case 'mutation': return $this->getMutationType();
+            case 'subscription': return $this->getSubscriptionType();
+            default: return null;
         }
     }
 
@@ -460,7 +460,7 @@ class Schema
         $errors = $this->validate();
 
         if ($errors !== []) {
-            throw new InvariantViolation(implode("\n\n", $this->validationErrors));
+            throw new InvariantViolation(\implode("\n\n", $this->validationErrors));
         }
 
         $internalTypes = Type::getStandardTypes() + Introspection::getTypes();

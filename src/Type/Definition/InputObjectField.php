@@ -2,8 +2,6 @@
 
 namespace GraphQL\Type\Definition;
 
-use function array_key_exists;
-
 use GraphQL\Error\InvariantViolation;
 use GraphQL\Language\AST\InputValueDefinitionNode;
 use GraphQL\Type\Schema;
@@ -71,7 +69,7 @@ class InputObjectField
 
     public function defaultValueExists(): bool
     {
-        return array_key_exists('defaultValue', $this->config);
+        return \array_key_exists('defaultValue', $this->config);
     }
 
     public function isRequired(): bool
@@ -96,12 +94,11 @@ class InputObjectField
 
         if (! $type instanceof InputType) {
             $notInputType = Utils::printSafe($this->type);
-
             throw new InvariantViolation("{$parentType->name}.{$this->name} field type must be Input Type but got: {$notInputType}");
         }
 
         // @phpstan-ignore-next-line should not happen if used properly
-        if (array_key_exists('resolve', $this->config)) {
+        if (\array_key_exists('resolve', $this->config)) {
             throw new InvariantViolation("{$parentType->name}.{$this->name} field has a resolve property, but Input Types cannot define resolvers.");
         }
     }

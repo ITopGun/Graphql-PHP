@@ -7,11 +7,6 @@ use GraphQL\Language\AST\InputObjectTypeDefinitionNode;
 use GraphQL\Language\AST\InputObjectTypeExtensionNode;
 use GraphQL\Utils\Utils;
 
-use function is_array;
-use function is_callable;
-use function is_iterable;
-use function is_string;
-
 /**
  * @phpstan-import-type UnnamedInputObjectFieldConfig from InputObjectField
  *
@@ -106,7 +101,7 @@ class InputObjectType extends Type implements InputType, NullableType, NamedType
     protected function initializeFields(): void
     {
         $fields = $this->config['fields'];
-        if (is_callable($fields)) {
+        if (\is_callable($fields)) {
             $fields = $fields();
         }
 
@@ -123,7 +118,7 @@ class InputObjectType extends Type implements InputType, NullableType, NamedType
      */
     protected function initializeField($nameOrIndex, $field): void
     {
-        if (is_callable($field)) {
+        if (\is_callable($field)) {
             $field = $field();
         }
 
@@ -131,13 +126,11 @@ class InputObjectType extends Type implements InputType, NullableType, NamedType
             $field = ['type' => $field];
         }
 
-        if (is_array($field)) {
+        if (\is_array($field)) {
             $field['name'] ??= $nameOrIndex;
 
-            if (! is_string($field['name'])) {
-                throw new InvariantViolation(
-                    "{$this->name} fields must be an associative array with field names as keys, an array of arrays with a name attribute, or a callable which returns one of those."
-                );
+            if (! \is_string($field['name'])) {
+                throw new InvariantViolation("{$this->name} fields must be an associative array with field names as keys, an array of arrays with a name attribute, or a callable which returns one of those.");
             }
 
             $field = new InputObjectField($field);
@@ -175,16 +168,13 @@ class InputObjectType extends Type implements InputType, NullableType, NamedType
         Utils::assertValidName($this->name);
 
         $fields = $this->config['fields'] ?? null;
-        if (is_callable($fields)) {
+        if (\is_callable($fields)) {
             $fields = $fields();
         }
 
-        if (! is_iterable($fields)) {
+        if (! \is_iterable($fields)) {
             $invalidFields = Utils::printSafe($fields);
-
-            throw new InvariantViolation(
-                "{$this->name} fields must be an iterable or a callable which returns an iterable, got: {$invalidFields}."
-            );
+            throw new InvariantViolation("{$this->name} fields must be an iterable or a callable which returns an iterable, got: {$invalidFields}.");
         }
 
         $resolvedFields = $this->getFields();
@@ -192,5 +182,16 @@ class InputObjectType extends Type implements InputType, NullableType, NamedType
         foreach ($resolvedFields as $field) {
             $field->assertValid($this);
         }
+    }
+
+    public function astNode(): ?InputObjectTypeDefinitionNode
+    {
+        return $this->astNode;
+    }
+
+    /** @return array<int, InputObjectTypeExtensionNode> */
+    public function extensionASTNodes(): array
+    {
+        return $this->extensionASTNodes;
     }
 }
