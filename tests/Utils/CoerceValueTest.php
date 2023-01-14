@@ -2,20 +2,13 @@
 
 namespace GraphQL\Tests\Utils;
 
-use function acos;
-
 use GraphQL\Error\CoercionError;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\EnumType;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Utils\Value;
-
-use function log;
-
 use PHPUnit\Framework\TestCase;
-
-use function pow;
 
 /**
  * @phpstan-import-type InputPath from CoercionError
@@ -183,7 +176,7 @@ class CoerceValueTest extends TestCase
      */
     public function testReturnsASingleErrorFor2x32InputAsInt(): void
     {
-        $result = Value::coerceValue(pow(2, 32), Type::int());
+        $result = Value::coerceValue(\pow(2, 32), Type::int());
         $this->expectGraphQLError(
             $result,
             'Expected type Int; Int cannot represent non 32-bit signed integer value: 4294967296'
@@ -207,7 +200,7 @@ class CoerceValueTest extends TestCase
      */
     public function testReturnsASingleErrorForInfinityInputAsInt(): void
     {
-        $inf = log(0);
+        $inf = \log(0);
         $result = Value::coerceValue($inf, Type::int());
         $this->expectGraphQLError(
             $result,
@@ -217,7 +210,7 @@ class CoerceValueTest extends TestCase
 
     public function testReturnsASingleErrorForNaNInputAsInt(): void
     {
-        $nan = acos(8);
+        $nan = \acos(8);
         $result = Value::coerceValue($nan, Type::int());
         $this->expectGraphQLError(
             $result,
@@ -316,7 +309,7 @@ class CoerceValueTest extends TestCase
      */
     public function testFloatReturnsASingleErrorForInfinityInput(): void
     {
-        $inf = log(0);
+        $inf = \log(0);
         $result = Value::coerceValue($inf, Type::float());
         $this->expectGraphQLError(
             $result,
@@ -326,7 +319,7 @@ class CoerceValueTest extends TestCase
 
     public function testFloatReturnsASingleErrorForNaNInput(): void
     {
-        $nan = acos(8);
+        $nan = \acos(8);
         $result = Value::coerceValue($nan, Type::float());
         $this->expectGraphQLError(
             $result,
